@@ -1,20 +1,25 @@
 import express, { Request, Response } from "express";
 import multer from "multer";
 import helmet from "helmet";
+import dotenv from "dotenv";
+import fs from 'fs'
+import path from 'path'
+import { FfprobeData, FfprobeFormat } from "fluent-ffmpeg";
 
 const ffmpeg = require('fluent-ffmpeg')
 const cors = require('cors')
 
+dotenv.config();
 const app = express();
-const port = 3000;
+const port = process.env.PORT
 
 const upload = multer({ dest: "uploads/" });
 
 app.use(helmet())
 app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET','POST'],
-  allowedHeaders: ['Content-Type'],
+  origin: process.env.ORIGIN,
+  methods: process.env.METHODS,
+  allowedHeaders: process.env.HEADERS,
 }))
 
 app.post(
@@ -22,7 +27,20 @@ app.post(
   upload.single("video"),
   (req: Request, res: Response) => {
     try {
-      
+      const videoFile = req.file;
+      const caption = req.body.caption;
+
+      const videoPath = path.resolve(videoFile!.path)
+
+      ffmpeg.ffprobe(videoPath, (err: Error | null, metadata: FfprobeData) => {
+
+        const durationInSecond = metadata.format.duration
+
+        if(durationInSecond !== undefined && durationInSecond > 60){
+          fs.unlinkSync(videoPath)
+          res.status(400).send('Video deve ter duração máximo de 1 min')
+        }
+      })
     } catch (error) {
       
     }
@@ -30,7 +48,7 @@ app.post(
 );
 
 app.listen(port, () => {
-  console.log('Ta rodando misera')
+  console.log('Server started on port ' + port);
 });
 
 /*
