@@ -61,9 +61,3 @@ function convertVideoToMp3(videoPath: string, audioPath: string) {
     console.log('Video converted to mp3')
   }).run()
 }
-
-
-/*
-400 Nenhum video foi enviado
-406 o video deve ter duração máximo de 1 min
-*/
