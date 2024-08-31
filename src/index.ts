@@ -38,8 +38,10 @@ app.post(
 
         if(durationInSecond !== undefined && durationInSecond > 60){
           fs.unlinkSync(videoPath)
-          res.status(400).send('Video deve ter duração máximo de 1 min')
+          res.status(400).send('Video must have a maximum duration of 1 min')
         }
+
+        convertVideoToMp3(videoFile!.path, `audios/${videoFile?.filename}.mp3`)
       })
     } catch (error) {
       
@@ -50,6 +52,16 @@ app.post(
 app.listen(port, () => {
   console.log('Server started on port ' + port);
 });
+
+
+function convertVideoToMp3(videoPath: string, audioPath: string) {
+  ffmpeg(videoPath)
+  .output(audioPath)
+  .on('end', ()=>{
+    console.log('Video converted to mp3')
+  }).run()
+}
+
 
 /*
 400 Nenhum video foi enviado
