@@ -78,7 +78,7 @@ function convertVideoToMp3(
   });
 }
 
-// List do fumo de amanhão: 
+// List do fumo de hoje: 
 async function uploadAudio(){}
 async function transcribeAudio() {}
 async function downloadTranscript() {}
