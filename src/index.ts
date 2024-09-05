@@ -2,12 +2,9 @@ import express, { Request, Response } from "express";
 import multer from "multer";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import fs from "fs";
 import path from "path";
-import { FfprobeData } from "fluent-ffmpeg";
-import axios from "axios";
+import { controllerFfmpeg } from "./utils/controller";
 
-const ffmpeg = require("fluent-ffmpeg");
 const cors = require("cors");
 
 dotenv.config();
@@ -34,24 +31,15 @@ app.post(
       const caption = req.body.caption;
 
       const videoPath = path.resolve(videoFile!.path);
+      const audioFilePath = path.resolve(`audios/${videoFile?.filename}.mp3`);
 
-      ffmpeg.ffprobe(
+      controllerFfmpeg(
         videoPath,
-        async (err: Error | null, metadata: FfprobeData) => {
-          const durationInSecond = metadata.format.duration;
-
-          if (durationInSecond !== undefined && durationInSecond > 60) {
-            fs.unlinkSync(videoPath);
-            res.status(400).send("Video must have a maximum duration of 1 min");
-          }
-
-          await convertVideoToMp3(
-            videoPath,
-            `audios/${videoFile?.filename}.mp3`
-          );
-          const audioPath = path.resolve(`audios/${videoFile?.filename}.mp3`);
-        }
-      );
+        res,
+        audioFilePath,
+        caption,
+        videoFile as Express.Multer.File
+      )
     } catch (error) {}
   }
 );
@@ -60,25 +48,5 @@ app.listen(port, () => {
   console.log("Server started on port " + port);
 });
 
-function convertVideoToMp3(
-  videoPath: string,
-  audioPath: string
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    ffmpeg(videoPath)
-      .output(audioPath)
-      .on("end", () => {
-        console.log("converted");
-        resolve();
-      })
-      .on('error', (err: Error) => {
-        console.log(err);
-        reject(err);
-      }).run();
-  });
-}
-
-// List do fumo de hoje: 
-async function uploadAudio(){}
-async function transcribeAudio() {}
-async function downloadTranscript() {}
+//timestamp
+//.str
