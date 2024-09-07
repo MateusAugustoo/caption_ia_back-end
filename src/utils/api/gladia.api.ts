@@ -1,7 +1,6 @@
 import axios from "axios";
 import fs from "fs";
 import FormData from "form-data";
-import { resolve } from "path";
 
 export async function uploadAudio(apiKey: string, audioFilePath: string) {
   const formData = new FormData();
@@ -32,7 +31,11 @@ export async function createTranscribeAudio(
     "https://api.gladia.io/v2/transcription",
     {
       audio_url: audioUrl,
-      language: targetLang,
+      translation: true,
+      translation_config: {
+        target_languages: [targetLang],
+        model: "base"
+      }
     },
     {
       headers: {
@@ -45,39 +48,23 @@ export async function createTranscribeAudio(
   return response.data.id;
 }
 
-export async function getTranscription(
-  transcribeId: string,
-  apiKey: string
-): Promise<any> {
+export async function getTranscription(transcribeId: string, apiKey:string): Promise<any>{
   let transcription;
 
   do {
-    const response = await axios.get(
-      `https://api.gladia.io/v2/transcription/${transcribeId}`,
-      {
-        headers: {
-          "x-gladia-key": apiKey,
-          "Content-Type": "application/json",
-        },
+    const response = await axios.get(`https://api.gladia.io/v2/transcription/${transcribeId}`, {
+      headers: {
+        'x-gladia-key': apiKey,
+        'Content-Type': 'application/json',
       }
-    );
+    })
 
-    if (response.data.result) {
-      transcription = response.data.result.transcription.utterances;
+    if(response.data.result){
+      transcription = response.data.result.translation.results[0].utterances
     } else {
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      await new Promise((resolve) => setTimeout(resolve, 10000))
     }
-  } while (!transcription);
-
-  return transcription;
+  }while(!transcription)
+  
+  return transcription
 }
-
-// export async function downloadTranscript(transcribeId: string, apiKey: string) {
-//   const response = await axios.get(`https://api.gladia.io/v2/transcription/${transcribeId}/file`, {
-//     headers: {
-//       "x-gladia-key": apiKey,
-//     }
-//   })
-
-//   return response.data
-// }
