@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT;
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "src/uploads/" });
 
 app.use(helmet());
 app.use(
@@ -31,9 +31,9 @@ app.post(
       const caption = req.body.caption;
 
       const videoPath = path.resolve(videoFile!.path);
-      const audioFilePath = path.resolve(`audios/${videoFile?.filename}.mp3`);
+      const audioFilePath = path.resolve(`src/audios/${videoFile?.filename}.mp3`);
 
-      controllerFfmpeg(
+      await controllerFfmpeg(
         videoPath,
         res,
         audioFilePath,
@@ -47,6 +47,3 @@ app.post(
 app.listen(port, () => {
   console.log("Server started on port " + port);
 });
-
-//timestamp
-//.str
