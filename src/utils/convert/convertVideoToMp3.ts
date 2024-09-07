@@ -1,4 +1,4 @@
-const ffmpeg = require("fluent-ffmpeg");
+import ffmpeg from "fluent-ffmpeg";
 
 export function convertVideoToMp3(
   videoPath: string,
